@@ -14,7 +14,7 @@ struct Args {
 
     #[arg(short, long)]
     /// The path to the file to upload to ipfs.
-    file: PathBuf,
+    file: Option<PathBuf>,
 
     #[arg(short, long, default_value = "http://ipfs.io")]
     /// URI of ipfs server to use
@@ -34,51 +34,28 @@ async fn foo() {
 async fn main() -> color_eyre::Result<()> {
     let args = get_args_and_setup_logging()?;
 
-    let api = iroh_api::Api::new(iroh_api::Config::default())
+    // establish a connection
+    let client = IpfsClient::from_str(&args.server)?;
+    let version = client
+        .version()
         .await
-        .unwrap();
+        .context("couldn't get server ipfs version")?;
+    debug!(?version, "connected to ipfs server");
 
-    let cid = api
-        .add(
-            iroh_unixfs::builder::Entry::from_path(
-                &args.file,
-                iroh_api::UnixfsConfig {
-                    wrap: false,
-                    chunker: Some(iroh_api::ChunkerConfig::Rabin),
-                },
-            )
-            .await
-            .unwrap(),
-        )
-        .await
-        .unwrap();
+    let AddResponse { name, hash, size } = match args.file {
+        None => client.add(io::stdin()).await,
+        Some(file) if file.as_os_str() == "-" => client.add(io::stdin()).await,
+        Some(file) => {
+            client
+                .add(fs::File::open(file).context("couldn't read input file")?)
+                .await
+        }
+    }
+    .context("couldn't upload file to ipfs")?;
 
-    info!(?cid);
+    info!(%name, %hash, %size, "uploaded file to ipfs");
 
     Ok(())
-
-    // // establish a connection
-    // let client = IpfsClient::from_str(&args.server)?;
-    // let version = client
-    //     .version()
-    //     .await
-    //     .context("couldn't get server ipfs version")?;
-    // debug!(?version, "connected to ipfs server");
-
-    // let AddResponse { name, hash, size } = match args.file {
-    //     None => client.add(io::stdin()).await,
-    //     Some(file) if file.as_os_str() == "-" => client.add(io::stdin()).await,
-    //     Some(file) => {
-    //         client
-    //             .add(fs::File::open(file).context("couldn't read input file")?)
-    //             .await
-    //     }
-    // }
-    // .context("couldn't upload file to ipfs")?;
-
-    // info!(%name, %hash, %size, "uploaded file to ipfs");
-
-    // Ok(())
 }
 
 /// Parse args, gracefully exiting the process if parsing fails.
