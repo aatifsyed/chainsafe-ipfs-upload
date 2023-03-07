@@ -1,4 +1,5 @@
 /// Returns the hash of the uploaded content
+// TODO(aatifsyed): shouldn't return a String, instead some domain-specific type
 pub async fn upload_to_ipfs(
     server_address: std::net::SocketAddr,
     data: impl std::io::Read + Send + Sync + Unpin + 'static,
