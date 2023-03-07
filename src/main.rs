@@ -26,10 +26,6 @@ fn args() {
     <Args as clap::CommandFactory>::command().debug_assert();
 }
 
-async fn foo() {
-    let api = iroh_api::Api::new(iroh_api::Config::default()).await;
-}
-
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     let args = get_args_and_setup_logging()?;
