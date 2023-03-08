@@ -47,6 +47,11 @@ $ cargo run -- --file=README.md --ipfs="$ipfs_daemon_address" --ethereum="$ether
 2023-03-08T07:28:35.435504Z  INFO chainsafe_ipfs_upload: stored cid in new ethereum contract address=b7f8bc63bbcad18155201308c8f3540b07f84f5e
 b7f8bc63bbcad18155201308c8f3540b07f84f5e
 ```
+## Check the contents of the smart contract
+```
+$ cast call b7f8bc63bbcad18155201308c8f3540b07f84f5e 'stored_string()(string)'
+QmUVS8yEji7RofnuQ6ikq6rT43tz6mTNiBA67MWdW6934V
+```
 ## Cleanup the daemons
 ```bash
 kill -SIGINT "$ipfs_daemon_pid"
