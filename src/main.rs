@@ -1,9 +1,7 @@
 use clap::Parser as _;
 use color_eyre::eyre::Context as _;
-use ipfs_api_backend_hyper::response::AddResponse;
-use ipfs_api_backend_hyper::{IpfsApi as _, IpfsClient, TryFromUri as _};
-use std::path::PathBuf;
-use std::{fs, io};
+use ipfs_api_backend_hyper::{response::AddResponse, IpfsApi as _, IpfsClient, TryFromUri as _};
+use std::{fs, io, path::PathBuf};
 use tracing::{debug, info};
 
 #[derive(Debug, clap::Parser)]

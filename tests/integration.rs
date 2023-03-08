@@ -2,7 +2,8 @@ use chainsafe_ipfs_upload as subject;
 use futures::TryStreamExt as _;
 use ipfs_api_backend_hyper::{IpfsApi as _, IpfsClient, TryFromUri as _};
 
-fn test_server() -> std::net::SocketAddr {
+// TODO(aatifsyed): proper ipfs harness (like we have for anvil)
+fn test_ipfs_server() -> std::net::SocketAddr {
     get_env_as("TEST_IPFS_SERVER")
 }
 
@@ -28,8 +29,8 @@ fn get_env_as<T: std::str::FromStr>(key: &str) -> T {
 #[tokio::test]
 async fn upload_to_ipfs() {
     let test_data = b"hello".as_slice(); // TODO(aatifsyed): this is a good candidate for property-based testing
-    let hash = dbg!(subject::upload_to_ipfs(test_server(), test_data).await).unwrap();
-    let client = IpfsClient::from_socket(http::uri::Scheme::HTTP, test_server()).unwrap();
+    let hash = dbg!(subject::upload_to_ipfs(test_ipfs_server(), test_data).await).unwrap();
+    let client = IpfsClient::from_socket(http::uri::Scheme::HTTP, test_ipfs_server()).unwrap();
     let fetched = dbg!(
         client
             .cat(&hash)
@@ -39,4 +40,18 @@ async fn upload_to_ipfs() {
     )
     .unwrap();
     assert_eq!(test_data, fetched);
+}
+
+#[tokio::test]
+async fn store_string() {
+    let anvil = ethers::utils::Anvil::at("/home/vscode/.foundry/bin/anvil").spawn();
+    let _stored = dbg!(subject::store_string(
+        String::from("hello"),
+        anvil.endpoint().parse().unwrap(),
+        anvil.keys()[0].clone(),
+        anvil.chain_id()
+    )
+    .await
+    .unwrap());
+    // TODO(aatifsyed): check the actual contract
 }
