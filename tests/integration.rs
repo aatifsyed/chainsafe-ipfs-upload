@@ -24,18 +24,31 @@ async fn upload_to_ipfs() {
     assert_eq!(test_data, fetched);
 }
 
-#[tokio::test]
+#[tokio::test] // TODO use the test_log crate to get our tracing in tests
 async fn store_string() {
+    let test_data = "hello";
     let anvil = ethers::utils::Anvil::new().spawn();
-    let _stored = dbg!(subject::store_string(
-        String::from("hello"),
-        anvil.endpoint().parse().unwrap(),
+    let anvil_url: url::Url = anvil.endpoint().parse().unwrap();
+    let contract_address = dbg!(subject::store_string(
+        test_data.into(),
+        anvil_url.clone(),
         anvil.keys()[0].clone(),
         anvil.chain_id()
     )
     .await
     .unwrap());
-    // TODO(aatifsyed): check the actual contract
+    let output = dbg!(std::process::Command::new("cast")
+        .arg("call")
+        .arg(format!("{contract_address:#02x}"))
+        .arg("stored_string()(string)")
+        .arg(format!("--rpc-url={anvil_url}"))
+        .output())
+    .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        output.stdout.strip_suffix(b"\n").unwrap(),
+        test_data.as_bytes()
+    );
 }
 
 fn test_ipfs_server() -> std::net::SocketAddr {
