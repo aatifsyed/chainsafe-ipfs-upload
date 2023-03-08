@@ -1,17 +1,21 @@
+// Use a development container for repeatable tooling and testing
+//
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/rust
 {
-	"name": "Rust",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	// "image": "mcr.microsoft.com/devcontainers/rust:0-1-bullseye"
+	"name": "chainsafe-ipfs-upload",
 	"build": {
 		"dockerfile": "Dockerfile",
 		"context": "."
 	},
+	// TODO(aatifsyed): start the ipfs daemon in the container already
+	// "postStartCommand": ""
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-azuretools.vscode-docker"
+				"ms-azuretools.vscode-docker",
+				"JuanBlanco.solidity",
+				"bierner.markdown-mermaid"
 			]
 		}
 	}

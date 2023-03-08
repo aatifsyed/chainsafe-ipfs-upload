@@ -1,3 +1,6 @@
+//! This library provides two top level functions:
+//! - [upload_to_ipfs] for uploading binary data to an IPFS server
+//! - [store_string] for storing an arbitrary string in a new contract
 use std::borrow::Borrow;
 
 use ethers::{
@@ -8,7 +11,7 @@ use ethers::{
 
 /// Returns the hash of the uploaded content
 // TODO(aatifsyed): shouldn't return a String, instead some domain-specific type
-#[tracing::instrument(skip(data))]
+#[tracing::instrument(level = "debug", skip(data), ret, err)]
 pub async fn upload_to_ipfs(
     server_address: std::net::SocketAddr,
     data: impl std::io::Read + Send + Sync + Unpin + 'static,
@@ -39,9 +42,13 @@ pub enum IpfsUploadError {
     UploadError(#[source] ipfs_api_backend_hyper::Error),
 }
 
-/// Returns the address of the contract which contains the stored string.
-/// The wallet (secret key holder) must have enough eth for gas.
-#[tracing::instrument(skip(secret_key))]
+/// Returns the address of a newly created contract which contains the stored string.
+/// The wallet (secret key holder) must have enough eth for gas to deploy the contract.
+//
+// We catch as many errors as possible in our contract at compile time - see build.rs
+//
+// BUG?(aatifsyed): _surely_ we can't store an unbounded string - how do we handle the error case? Will it be caught in DetokenizationError?
+#[tracing::instrument(level = "debug", skip(secret_key), ret, err)]
 pub async fn store_string(
     string: String,
     provider_url: url::Url,
@@ -53,6 +60,7 @@ pub async fn store_string(
             AbiError, ConstructorError, ContractNotDeployed, DecodingError, DetokenizationError,
             MiddlewareError, ProviderError, Revert,
         },
+        core::types::Bytes,
         middleware::SignerMiddleware,
         providers::{Http, Provider},
         signers::{LocalWallet, Signer as _},
@@ -65,11 +73,11 @@ pub async fn store_string(
     );
 
     let factory = DeploymentTxFactory::new(
-        // TODO(aatifsyed): eliminate the ser/de error case by using a crate like databake
+        // TODO(aatifsyed): eliminate the need for deser (and therefore the error case) using a crate like databake
         serde_json::from_str(include_str!(concat!(env!("OUT_DIR"), "/abi.json"))).expect(
             "we've just compiled this abi in build.rs, and it should cross the serde boundary intact",
         ),
-        ethers::core::types::Bytes::from_static(include_bytes!(concat!(
+        Bytes::from_static(include_bytes!(concat!(
             env!("OUT_DIR"),
             "/bytecode.bin"
         ))),

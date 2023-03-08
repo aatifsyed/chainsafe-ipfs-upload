@@ -1,7 +1,6 @@
-# Running integration tests
-Start a mock IPFS server, and set the `TEST_IPFS_SERVER` to the socket address of the *API server*.
-
-E.g with Kubo (installed in the devcontainer)
+# Running the binary
+## Start an IPFS node
+- Take note of the IP and port (the port will be random)
 ```console
 $ ipfs daemon --init --init-profile=test & ipfs_daemon_pid=$!
 Initializing daemon...
@@ -9,10 +8,48 @@ Initializing daemon...
 API server listening on /ip4/127.0.0.1/tcp/11111
 ...
 Daemon is ready
-$ anvil & ethereum_daemon_pid=$!
+$ ipfs_daemon_address=127.0.0.1:11111
+```
+## Start an ethereum node
+- Take note of the ip and port
+- Take note of an account's private key
+```
+$ anvil --accounts=1 & ethereum_daemon_pid=$!
 ...
-Listening on 127.0.0.1:22222
-$ TEST_IPFS_SERVER=127.0.0.1:11111 TEST_ETHEREUM_GATEWAY=http://127.0.0.1:22222 cargo test
+Private Keys
+==================
+
+(0) 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ...
+Listening on 127.0.0.1:8545
+$ ethereum_daemon_url=http://127.0.0.1:8545
+$ ethereum_wallet_secret_key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+## Run the binary
+```
+$ cargo run -- --file=README.md --ipfs="$ipfs_daemon_address" --ethereum="$ethereum_daemon_url" --secret-key="$ethereum_wallet_private_key"
+...
+2023-03-08T07:28:28.421663Z  INFO chainsafe_ipfs_upload: uploaded file to ipfs cid=QmUVS8yEji7RofnuQ6ikq6rT43tz6mTNiBA67MWdW6934V
+2023-03-08T07:28:35.435504Z  INFO chainsafe_ipfs_upload: stored cid in new ethereum contract address=b7f8bc63bbcad18155201308c8f3540b07f84f5e
+b7f8bc63bbcad18155201308c8f3540b07f84f5e
+```
+## Cleanup the daemons
+```bash
+kill -SIGINT "$ipfs_daemon_pid"
+kill -SIGINT "$ethereum_daemon_pid"
+```
+
+# Running integration tests
+The integration tests currently rely on an IPFS server running.
+Run as above (the port will be random):
+```console
+$ ipfs daemon --init --init-profile=test & ipfs_daemon_pid=$!
+Initializing daemon...
+...
+API server listening on /ip4/127.0.0.1/tcp/11111
+...
+Daemon is ready
+$ ipfs_daemon_address=127.0.0.1:11111
+$ TEST_IPFS_SERVER=$ipfs_daemon_address cargo test
 $ kill -SIGINT "$ipfs_daemon_pid"
 ```
