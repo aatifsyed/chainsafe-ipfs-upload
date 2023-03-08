@@ -41,7 +41,7 @@ $ ethereum_wallet_secret_key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efca
 ```
 ## Run the binary
 ```
-$ cargo run -- --file=README.md --ipfs="$ipfs_daemon_address" --ethereum="$ethereum_daemon_url" --secret-key="$ethereum_wallet_private_key"
+$ cargo run -- --file=README.md --ipfs="$ipfs_daemon_address" --ethereum="$ethereum_daemon_url" --secret-key="$ethereum_wallet_secret_key"
 ...
 2023-03-08T07:28:28.421663Z  INFO chainsafe_ipfs_upload: uploaded file to ipfs cid=QmUVS8yEji7RofnuQ6ikq6rT43tz6mTNiBA67MWdW6934V
 2023-03-08T07:28:35.435504Z  INFO chainsafe_ipfs_upload: stored cid in new ethereum contract address=b7f8bc63bbcad18155201308c8f3540b07f84f5e
