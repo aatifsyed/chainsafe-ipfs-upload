@@ -1,4 +1,18 @@
 # Running the binary
+## Run in devcontainer
+Either run the commands from within VSCode (which should pick up the devcontainer) or
+```bash
+docker build --tag=scratch --file=.devcontainer/Dockerfile .devcontainer
+docker run \
+    --interactive \
+    --rm \
+    --tty \
+    --user="$(id -u):$(id -g)" \
+    --volume="$PWD:/tmp/chainsafe-ipfs-upload" \
+    --workdir=/tmp/chainsafe-ipfs-upload \
+    scratch
+```
+
 ## Start an IPFS node
 - Take note of the IP and port (the port will be random)
 ```console
