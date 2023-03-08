@@ -1,3 +1,24 @@
+# Application overview
+```mermaid
+flowchart BT
+    main[main.rs]
+    subgraph lib[lib.rs]
+        upload_to_ipfs
+        store_string
+    end
+    ipfs[(ipfs node)]
+    eth[(ethereum node)]
+    build[build.rs]
+
+    main -- calls into --> lib
+
+    upload_to_ipfs -- store data, get cid --> ipfs
+    store_string -- create contract containing cid --> eth
+
+    build -- compile contract --> store_string
+
+```
+
 # Running the binary
 ## Run in devcontainer
 Either run the commands from within VSCode (which should pick up the devcontainer) or
